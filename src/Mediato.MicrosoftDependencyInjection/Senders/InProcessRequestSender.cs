@@ -1,5 +1,4 @@
 ﻿using Mediato.Abstractions;
-using Mediato.MicrosoftDependencyInjection.Senders;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Mediato.Senders;
