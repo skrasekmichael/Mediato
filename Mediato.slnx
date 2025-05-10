@@ -1,0 +1,17 @@
+<Solution>
+  <Folder Name="/Solution Items/" Id="8ec462fd-d22e-90a8-e5ce-7e832ba40c5d">
+    <File Path=".editorconfig" />
+    <File Path=".gitignore" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/Mediato.Abstractions/Mediato.Abstractions.csproj" Id="615160b7-c02a-4ec3-b4af-8480393a9f36" />
+    <Project Path="src/Mediato.MicrosoftDependencyInjection/Mediato.MicrosoftDependencyInjection.csproj" Id="81610ef2-e969-26f3-e1b2-0e8aba5527b2" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Mediato.Common/Mediato.Common.csproj" Id="74c94982-d37a-44de-aac1-03e98d5a9333" />
+    <Project Path="tests/Mediato.Data/Mediato.Data.csproj" />
+    <Project Path="tests/Mediato.MicrosoftDependencyInjection.Tests/Mediato.MicrosoftDependencyInjection.Tests.csproj" />
+  </Folder>
+</Solution>

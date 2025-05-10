@@ -1,0 +1,113 @@
+﻿using System.Reflection;
+using Mediato.Abstractions;
+using Mediato.MicrosoftDependencyInjection.Publishers;
+using Mediato.MicrosoftDependencyInjection.Senders;
+using Microsoft.Extensions.DependencyInjection;
+
+namespace Mediato.MicrosoftDependencyInjection;
+
+public sealed class MediatorConfiguration(IServiceCollection services)
+{
+	private static readonly Type NotificationHandlerTypeDefinition = typeof(INotificationHandler<>);
+	private static readonly Type RequestHandlerTypeDefinition = typeof(IRequestHandler<,>);
+
+	private readonly IServiceCollection _services = services;
+
+	public MediatorConfiguration UseDefaultRequestSender() => UseRequestSender<InProcessRequestSender>();
+
+	public MediatorConfiguration UseRequestSender<TRequestSender>() where TRequestSender : class, IRequestSender
+	{
+		_services.AddSingleton<IRequestSender, TRequestSender>();
+		return this;
+	}
+
+	public MediatorConfiguration UseDefaultNotificationPublisher() => UseNotificationPublisher<InProcessForEachNotificationPublisher>();
+
+	public MediatorConfiguration UseNotificationPublisher<TPublisher>() where TPublisher : class, INotificationPublisher
+	{
+		_services.AddSingleton<INotificationPublisher, TPublisher>();
+		return this;
+	}
+
+	public MediatorConfiguration RegisterRequestHandler<TRequestHandler, TRequest, TResponse>(ServiceLifetime lifetime = ServiceLifetime.Singleton)
+		where TRequestHandler : class, IRequestHandler<TRequest, TResponse>
+		where TRequest : IRequest<TResponse>
+	{
+		RegisterRequestHandlerService(typeof(IRequestHandler<TRequest, TResponse>), typeof(TRequestHandler), lifetime);
+		return this;
+	}
+
+	public MediatorConfiguration RegisterNotificationHandler<TNotificationHandler, TNotification>(ServiceLifetime lifetime = ServiceLifetime.Singleton)
+		where TNotificationHandler : class, INotificationHandler<TNotification>
+		where TNotification : INotification
+	{
+		RegisterNotificationHandlerService(typeof(INotificationHandler<TNotification>), typeof(TNotificationHandler), lifetime);
+		return this;
+	}
+
+	public MediatorConfiguration RegisterRequestHandlersFromAssembly<TTypeInAssembly>(ServiceLifetime lifetime = ServiceLifetime.Singleton) => RegisterRequestHandlersFromAssembly(typeof(TTypeInAssembly).Assembly, lifetime);
+
+	public MediatorConfiguration RegisterRequestHandlersFromAssembly(Assembly assembly, ServiceLifetime lifetime = ServiceLifetime.Singleton)
+	{
+		RegisterHandlersFromAssembly(assembly, lifetime, RequestHandlerTypeDefinition, RegisterRequestHandlerService);
+		return this;
+	}
+
+	public MediatorConfiguration RegisterNotificationHandlersFromAssembly<TTypeInAssembly>(ServiceLifetime lifetime = ServiceLifetime.Singleton) => RegisterNotificationHandlersFromAssembly(typeof(TTypeInAssembly).Assembly, lifetime);
+
+	public MediatorConfiguration RegisterNotificationHandlersFromAssembly(Assembly assembly, ServiceLifetime lifetime = ServiceLifetime.Singleton)
+	{
+		RegisterHandlersFromAssembly(assembly, lifetime, NotificationHandlerTypeDefinition, RegisterNotificationHandlerService);
+		return this;
+	}
+
+	private void RegisterNotificationHandlerService(Type serviceType, Type implementationType, ServiceLifetime lifetime)
+	{
+		if (_services.IsTypeAlreadyRegistered(serviceType, implementationType))
+		{
+			return;
+		}
+
+		_services.AddService(serviceType, implementationType, lifetime);
+	}
+
+	private void RegisterRequestHandlerService(Type serviceType, Type implementationType, ServiceLifetime lifetime)
+	{
+		if (_services.IsTypeAlreadyRegistered(serviceType))
+		{
+			return;
+		}
+
+		_services.AddService(serviceType, implementationType, lifetime);
+	}
+
+	private static void RegisterHandlersFromAssembly(Assembly assembly, ServiceLifetime lifetime, Type handlerTypedDefinition, Action<Type, Type, ServiceLifetime> register)
+	{
+		var types = assembly
+			.GetTypes()
+			.Select(type => (type, GetGenericInterfaceType(type, handlerTypedDefinition)));
+
+		foreach (var (implementationType, interfaceType) in types)
+		{
+			if (interfaceType is null)
+			{
+				continue;
+			}
+
+			var serviceType = handlerTypedDefinition.MakeGenericType(interfaceType.GetGenericArguments());
+			register(serviceType, implementationType, lifetime);
+		}
+	}
+
+	private static Type? GetGenericInterfaceType(Type type, Type genericInterfaceTypeDef)
+	{
+		if (!type.IsClass || type.IsAbstract)
+		{
+			return null;
+		}
+
+		return type
+			.GetInterfaces()
+			.FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == genericInterfaceTypeDef);
+	}
+}
