@@ -6,7 +6,8 @@ on:
     - "*.*.*"
 
 jobs:
-  build:
+  publish:
+    name: Build, Test, and Publish
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
