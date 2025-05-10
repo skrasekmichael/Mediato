@@ -1,7 +1,7 @@
 ﻿using Mediato.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Mediato.MicrosoftDependencyInjection.Publishers;
+namespace Mediato.Publishers;
 
 public sealed class InProcessWhenAllNotificationPublisher(IServiceProvider serviceProvider) : INotificationPublisher
 {

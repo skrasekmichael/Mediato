@@ -2,8 +2,8 @@
 using Mediato.Abstractions;
 using Mediato.Common;
 using Mediato.Data.Notification;
-using Mediato.MicrosoftDependencyInjection.Publishers;
 using Mediato.MicrosoftDependencyInjection.Tests.Mocks;
+using Mediato.Publishers;
 using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
 

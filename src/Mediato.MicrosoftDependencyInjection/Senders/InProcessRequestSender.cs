@@ -1,7 +1,8 @@
 ﻿using Mediato.Abstractions;
+using Mediato.MicrosoftDependencyInjection.Senders;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Mediato.MicrosoftDependencyInjection.Senders;
+namespace Mediato.Senders;
 
 public sealed class InProcessRequestSender(IServiceProvider serviceProvider) : IRequestSender
 {

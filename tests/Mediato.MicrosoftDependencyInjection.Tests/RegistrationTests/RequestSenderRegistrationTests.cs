@@ -1,6 +1,6 @@
 ﻿using Mediato.Abstractions;
-using Mediato.MicrosoftDependencyInjection.Senders;
 using Mediato.MicrosoftDependencyInjection.Tests.RegistrationTests.Extensions;
+using Mediato.Senders;
 using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
 

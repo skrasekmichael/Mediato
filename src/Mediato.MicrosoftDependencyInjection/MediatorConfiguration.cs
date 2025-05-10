@@ -1,10 +1,10 @@
 ﻿using System.Reflection;
 using Mediato.Abstractions;
-using Mediato.MicrosoftDependencyInjection.Publishers;
-using Mediato.MicrosoftDependencyInjection.Senders;
+using Mediato.Publishers;
+using Mediato.Senders;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Mediato.MicrosoftDependencyInjection;
+namespace Mediato;
 
 public sealed class MediatorConfiguration(IServiceCollection services)
 {

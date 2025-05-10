@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 
-namespace Mediato.MicrosoftDependencyInjection;
+namespace Mediato;
 
 public static class ServiceCollectionExtensions
 {

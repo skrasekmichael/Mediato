@@ -1,4 +1,4 @@
-﻿namespace Mediato.MicrosoftDependencyInjection.Senders;
+﻿namespace Mediato.Senders;
 
 public sealed class RequestHandlerNotFoundException : Exception
 {
