@@ -14,6 +14,7 @@ public sealed class InProcessForEachNotificationPublisherTests : NotificationPub
 		config.RegisterNotificationHandlersFromAssembly<Data.AssemblyReference>();
 		config.RegisterNotificationHandlersFromAssembly<AssemblyReference>();
 		config.RegisterNotificationHandler<NameChangedNotificationHandler, NameChangedNotification>();
+		config.UseCachingLayer(false);
 		config.UseDefaultNotificationPublisher();
 	}
 
@@ -27,6 +28,18 @@ public sealed class InProcessForEachNotificationPublisherTests : NotificationPub
 	public Task PublishAsyncCalledTwice_Should_NotifyAllHandlersRegisteredToTheNotificationTwice()
 	{
 		return PublishAsyncCalledNTimes_Should_NotifyAllHandlersRegisteredToTheNotificationNTimes(2);
+	}
+
+	[Fact]
+	public Task BoxedPublishAsync_Should_NotifyAllHandlersRegisteredToTheNotification()
+	{
+		return BoxedPublishAsyncCalledNTimes_Should_NotifyAllHandlersRegisteredToTheNotificationNTimes(1);
+	}
+
+	[Fact]
+	public Task BoxedPublishAsyncCalledTwice_Should_NotifyAllHandlersRegisteredToTheNotificationTwice()
+	{
+		return BoxedPublishAsyncCalledNTimes_Should_NotifyAllHandlersRegisteredToTheNotificationNTimes(2);
 	}
 
 	[Fact]
@@ -47,11 +60,43 @@ public sealed class InProcessForEachNotificationPublisherTests : NotificationPub
 	}
 
 	[Fact]
+	public async Task BoxedPublishAsync_Should_NotifyAllHandlersRegisteredToTheNotificationInSequentialOrder()
+	{
+		//arrange
+		var publisher = ServiceProvider.GetRequiredService<INotificationPublisher>();
+		INotification notification = new NameChangedNotification("Darth Vader");
+
+		//act
+		await publisher.PublishAsync(notification, TestContext.Current.CancellationToken);
+
+		//assert
+		OrderShouldBe<NameChangedNotificationHandlerA>(1);
+		OrderShouldBe<NameChangedNotificationHandlerB>(2);
+		OrderShouldBe<NameChangedNotificationHandlerC>(3);
+		OrderShouldBe<NameChangedNotificationHandler>(4);
+	}
+
+	[Fact]
 	public async Task PublishAsync_ForConcurrentHandler_Should_TimeoutDueToDeadlock()
 	{
 		//arrange
 		var publisher = ServiceProvider.GetRequiredService<INotificationPublisher>();
 		var notification = new ConcurrentNotification();
+		var ct = TestContext.Current.CancellationToken;
+
+		//act
+		var hasTimedOut = await publisher.PublishAsync(notification, ct).WithTimeout(2000, ct);
+
+		//assert
+		hasTimedOut.ShouldBeTrue();
+	}
+
+	[Fact]
+	public async Task BoxedPublishAsync_ForConcurrentHandler_Should_TimeoutDueToDeadlock()
+	{
+		//arrange
+		var publisher = ServiceProvider.GetRequiredService<INotificationPublisher>();
+		INotification notification = new ConcurrentNotification();
 		var ct = TestContext.Current.CancellationToken;
 
 		//act

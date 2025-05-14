@@ -1,4 +1,4 @@
-﻿namespace Mediato.Senders;
+﻿namespace Mediato.Exceptions;
 
 public sealed class RequestHandlerNotFoundException : Exception
 {

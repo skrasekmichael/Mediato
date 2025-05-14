@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using Mediato.Abstractions;
 using Mediato.Publishers;
+using Mediato.Publishers.Helpers;
 using Mediato.Senders;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -12,6 +13,32 @@ public sealed class MediatorConfiguration(IServiceCollection services)
 	private static readonly Type RequestHandlerTypeDefinition = typeof(IRequestHandler<,>);
 
 	private readonly IServiceCollection _services = services;
+
+	public bool IsUsingCachingLayer { get; private set; }
+
+	public MediatorConfiguration UseCachingLayer(bool enableCaching)
+	{
+		if (enableCaching)
+		{
+			IsUsingCachingLayer = true;
+			_services.AddSingleton<INotificationWrapperProvider, NotificationWrapperProviderWithCachingFacade>();
+		}
+		else
+		{
+			IsUsingCachingLayer = false;
+			_services.AddSingleton<INotificationWrapperProvider, FactoryNotificationWrapperProvider>();
+		}
+
+		return this;
+	}
+
+	public MediatorConfiguration UseDefaultServices()
+	{
+		UseRequestSender<InProcessRequestSender>();
+		UseNotificationPublisher<InProcessForEachNotificationPublisher>();
+
+		return this;
+	}
 
 	public MediatorConfiguration UseDefaultRequestSender() => UseRequestSender<InProcessRequestSender>();
 
@@ -85,7 +112,7 @@ public sealed class MediatorConfiguration(IServiceCollection services)
 	{
 		var types = assembly
 			.GetTypes()
-			.Select(type => (type, GetGenericInterfaceType(type, handlerTypedDefinition)));
+			.Select(type => (type, type.GetGenericInterfaceType(handlerTypedDefinition)));
 
 		foreach (var (implementationType, interfaceType) in types)
 		{
@@ -97,17 +124,5 @@ public sealed class MediatorConfiguration(IServiceCollection services)
 			var serviceType = handlerTypedDefinition.MakeGenericType(interfaceType.GetGenericArguments());
 			register(serviceType, implementationType, lifetime);
 		}
-	}
-
-	private static Type? GetGenericInterfaceType(Type type, Type genericInterfaceTypeDef)
-	{
-		if (!type.IsClass || type.IsAbstract)
-		{
-			return null;
-		}
-
-		return type
-			.GetInterfaces()
-			.FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == genericInterfaceTypeDef);
 	}
 }
