@@ -47,6 +47,25 @@ public abstract class NotificationPublisherBaseTests
 		CounterShouldBe<NameChangedNotificationHandlerC>(count);
 	}
 
+	protected async Task BoxedPublishAsyncCalledNTimes_Should_NotifyAllHandlersRegisteredToTheNotificationNTimes(int count)
+	{
+		//arrange
+		var publisher = ServiceProvider.GetRequiredService<INotificationPublisher>();
+		INotification notification = new NameChangedNotification("Darth Vader");
+
+		//act
+		for (var i = 0; i < count; i++)
+		{
+			await publisher.PublishAsync(notification, TestContext.Current.CancellationToken);
+		}
+
+		//assert
+		CounterShouldBe<NameChangedNotificationHandler>(count);
+		CounterShouldBe<NameChangedNotificationHandlerA>(count);
+		CounterShouldBe<NameChangedNotificationHandlerB>(count);
+		CounterShouldBe<NameChangedNotificationHandlerC>(count);
+	}
+
 	protected void CounterShouldBe<TOwner>(int expectedCount)
 	{
 		var counter = ServiceProvider.GetRequiredService<Owner<TOwner, OrderCounter>>();
