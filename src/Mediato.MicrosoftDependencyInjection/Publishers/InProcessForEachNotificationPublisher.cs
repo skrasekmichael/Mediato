@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Mediato.Publishers;
 
-public sealed partial class InProcessForEachNotificationPublisher(IServiceProvider serviceProvider) : INotificationPublisher
+public sealed class InProcessForEachNotificationPublisher(IServiceProvider serviceProvider) : INotificationPublisher
 {
 	private static readonly Type NotificationHandlerTypeDefinition = typeof(INotificationHandler<>);
 

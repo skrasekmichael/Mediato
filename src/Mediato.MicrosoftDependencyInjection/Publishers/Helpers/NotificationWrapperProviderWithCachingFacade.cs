@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Collections.Concurrent;
+using System.Runtime.CompilerServices;
 
 namespace Mediato.Publishers.Helpers;
 
@@ -6,19 +7,14 @@ internal sealed class NotificationWrapperProviderWithCachingFacade : INotificati
 {
 	private static readonly Type NotificationHandlerWrapperTypeDefinition = typeof(NotificationHandlerWrapper<>);
 
-	private readonly Dictionary<Type, INotificationHandlerWrapper> _notificationToWrapperCache = [];
+	private readonly ConcurrentDictionary<Type, INotificationHandlerWrapper> _notificationToWrapperCache = [];
 
 	public INotificationHandlerWrapper GetWrapper(Type notificationType)
 	{
-		if (_notificationToWrapperCache.TryGetValue(notificationType, out var cachedWrapper))
+		return _notificationToWrapperCache.GetOrAdd(notificationType, localNotificationType =>
 		{
-			return cachedWrapper;
-		}
-
-		var wrapperType = NotificationHandlerWrapperTypeDefinition.MakeGenericType(notificationType);
-		var wrapper = Unsafe.As<INotificationHandlerWrapper>(Activator.CreateInstance(wrapperType))!;
-		_notificationToWrapperCache.Add(notificationType, wrapper);
-
-		return wrapper;
+			var wrapperType = NotificationHandlerWrapperTypeDefinition.MakeGenericType(localNotificationType);
+			return Unsafe.As<INotificationHandlerWrapper>(Activator.CreateInstance(wrapperType))!;
+		});
 	}
 }
