@@ -13,33 +13,45 @@ public sealed class InProcessForEachNotificationPublisherTests : NotificationPub
 	{
 		config.RegisterNotificationHandlersFromAssembly<Data.AssemblyReference>();
 		config.RegisterNotificationHandlersFromAssembly<AssemblyReference>();
-		config.RegisterNotificationHandler<NameChangedNotificationHandler, NameChangedNotification>();
+		config.RegisterNotificationHandler<BasicNotificationHandler, BasicNotification>();
 		config.UseCachingLayer(false);
 		config.UseDefaultNotificationPublisher();
 	}
 
-	[Fact]
-	public Task PublishAsync_Should_NotifyAllHandlersRegisteredToTheNotification()
+	[Theory]
+	[InlineData(1)]
+	[InlineData(2)]
+	[InlineData(10)]
+	public Task PublishAsyncCalledNTimes_Should_NotifyAllHandlersRegisteredToTheNotificationNTimes(int count)
 	{
-		return PublishAsyncCalledNTimes_Should_NotifyAllHandlersRegisteredToTheNotificationNTimes(1);
+		return CallPublishAsyncNTimesAndVerifyThatAllHandlersRegisteredToTheNotificationWereNotifiedNTimes<BasicNotification, BasicNotification>(count, BasicNotificationHandlerType);
 	}
 
-	[Fact]
-	public Task PublishAsyncCalledTwice_Should_NotifyAllHandlersRegisteredToTheNotificationTwice()
+	[Theory]
+	[InlineData(1)]
+	[InlineData(2)]
+	[InlineData(10)]
+	public Task PublishAsyncCalledNTimes_WithBoxedNotification_Should_NotifyAllHandlersRegisteredToTheNotificationNTimes(int count)
 	{
-		return PublishAsyncCalledNTimes_Should_NotifyAllHandlersRegisteredToTheNotificationNTimes(2);
+		return CallPublishAsyncNTimesAndVerifyThatAllHandlersRegisteredToTheNotificationWereNotifiedNTimes<INotification, BasicNotification>(count, BasicNotificationHandlerType);
 	}
 
-	[Fact]
-	public Task BoxedPublishAsync_Should_NotifyAllHandlersRegisteredToTheNotification()
+	[Theory]
+	[InlineData(1)]
+	[InlineData(2)]
+	[InlineData(10)]
+	public Task PublishAsyncCalledNTimes_WithNestedNotification_Should_NotifyAllHandlersRegisteredToTheNotificationNTimes(int count)
 	{
-		return BoxedPublishAsyncCalledNTimes_Should_NotifyAllHandlersRegisteredToTheNotificationNTimes(1);
+		return CallPublishAsyncNTimesAndVerifyThatAllHandlersRegisteredToTheNotificationWereNotifiedNTimes<NestedNotification, NestedNotification>(count, NestedNotificationHandlerType);
 	}
 
-	[Fact]
-	public Task BoxedPublishAsyncCalledTwice_Should_NotifyAllHandlersRegisteredToTheNotificationTwice()
+	[Theory]
+	[InlineData(1)]
+	[InlineData(2)]
+	[InlineData(10)]
+	public Task PublishAsyncCalledNTimes_WithBoxedNestedNotification_Should_NotifyAllHandlersRegisteredToTheNotificationNTimes(int count)
 	{
-		return BoxedPublishAsyncCalledNTimes_Should_NotifyAllHandlersRegisteredToTheNotificationNTimes(2);
+		return CallPublishAsyncNTimesAndVerifyThatAllHandlersRegisteredToTheNotificationWereNotifiedNTimes<INotification, NestedNotification>(count, NestedNotificationHandlerType);
 	}
 
 	[Fact]
@@ -47,16 +59,16 @@ public sealed class InProcessForEachNotificationPublisherTests : NotificationPub
 	{
 		//arrange
 		var publisher = ServiceProvider.GetRequiredService<INotificationPublisher>();
-		var notification = new NameChangedNotification("Darth Vader");
+		var notification = new BasicNotification();
 
 		//act
 		await publisher.PublishAsync(notification, TestContext.Current.CancellationToken);
 
 		//assert
-		OrderShouldBe<NameChangedNotificationHandlerA>(1);
-		OrderShouldBe<NameChangedNotificationHandlerB>(2);
-		OrderShouldBe<NameChangedNotificationHandlerC>(3);
-		OrderShouldBe<NameChangedNotificationHandler>(4);
+		OrderShouldBe<BasicNotificationHandlerA>(1);
+		OrderShouldBe<BasicNotificationHandlerB>(2);
+		OrderShouldBe<BasicNotificationHandlerC>(3);
+		OrderShouldBe<BasicNotificationHandler>(4);
 	}
 
 	[Fact]
@@ -64,16 +76,16 @@ public sealed class InProcessForEachNotificationPublisherTests : NotificationPub
 	{
 		//arrange
 		var publisher = ServiceProvider.GetRequiredService<INotificationPublisher>();
-		INotification notification = new NameChangedNotification("Darth Vader");
+		INotification notification = new BasicNotification();
 
 		//act
 		await publisher.PublishAsync(notification, TestContext.Current.CancellationToken);
 
 		//assert
-		OrderShouldBe<NameChangedNotificationHandlerA>(1);
-		OrderShouldBe<NameChangedNotificationHandlerB>(2);
-		OrderShouldBe<NameChangedNotificationHandlerC>(3);
-		OrderShouldBe<NameChangedNotificationHandler>(4);
+		OrderShouldBe<BasicNotificationHandlerA>(1);
+		OrderShouldBe<BasicNotificationHandlerB>(2);
+		OrderShouldBe<BasicNotificationHandlerC>(3);
+		OrderShouldBe<BasicNotificationHandler>(4);
 	}
 
 	[Fact]

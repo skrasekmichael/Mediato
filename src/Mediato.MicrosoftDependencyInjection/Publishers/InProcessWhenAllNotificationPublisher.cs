@@ -7,11 +7,22 @@ namespace Mediato.Publishers;
 public sealed class InProcessWhenAllNotificationPublisher(IServiceProvider serviceProvider) : INotificationPublisher
 {
 	private static readonly Type NotificationHandlerTypeDefinition = typeof(INotificationHandler<>);
+	private static readonly Type NotificationType = typeof(INotification);
 
 	private readonly IServiceProvider _serviceProvider = serviceProvider;
 	private readonly INotificationWrapperProvider _wrapperProvider = serviceProvider.GetRequiredService<INotificationWrapperProvider>();
 
-	public async ValueTask PublishAsync<TNotification>(TNotification notification, CancellationToken ct = default) where TNotification : INotification
+	public ValueTask PublishAsync<TNotification>(TNotification notification, CancellationToken ct = default) where TNotification : INotification
+	{
+		if (typeof(TNotification) == NotificationType)
+		{
+			return DefaultInternalPublishAsync(notification, ct);
+		}
+
+		return GenericInternalPublishAsync(notification, ct);
+	}
+
+	private async ValueTask GenericInternalPublishAsync<TNotification>(TNotification notification, CancellationToken ct = default) where TNotification : INotification
 	{
 		var handlers = _serviceProvider.GetServices<INotificationHandler<TNotification>>();
 		if (!handlers.Any())
@@ -23,13 +34,17 @@ public sealed class InProcessWhenAllNotificationPublisher(IServiceProvider servi
 		await Task.WhenAll(tasks);
 	}
 
-	public async ValueTask PublishAsync(INotification notification, CancellationToken ct = default)
+	private async ValueTask DefaultInternalPublishAsync(INotification notification, CancellationToken ct = default)
 	{
 		var notificationType = notification.GetType();
 		var handlerType = NotificationHandlerTypeDefinition.MakeGenericType(notificationType);
 
 		var wrapper = _wrapperProvider.GetWrapper(notificationType);
 		var handlers = _serviceProvider.GetServices(handlerType);
+		if (!handlers.Any())
+		{
+			return;
+		}
 
 		var tasks = handlers.Select(x => wrapper.HandleAsync(x, notification, ct));
 		await Task.WhenAll(tasks);

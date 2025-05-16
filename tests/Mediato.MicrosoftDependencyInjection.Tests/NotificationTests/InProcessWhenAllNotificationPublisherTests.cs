@@ -15,33 +15,45 @@ public sealed class InProcessWhenAllNotificationPublisherTests : NotificationPub
 	{
 		config.RegisterNotificationHandlersFromAssembly<Data.AssemblyReference>();
 		config.RegisterNotificationHandlersFromAssembly<AssemblyReference>();
-		config.RegisterNotificationHandler<NameChangedNotificationHandler, NameChangedNotification>();
+		config.RegisterNotificationHandler<BasicNotificationHandler, BasicNotification>();
 		config.UseCachingLayer(false);
 		config.UseNotificationPublisher<InProcessWhenAllNotificationPublisher>();
 	}
 
-	[Fact]
-	public Task PublishAsync_Should_NotifyAllHandlersRegisteredToTheNotification()
+	[Theory]
+	[InlineData(1)]
+	[InlineData(2)]
+	[InlineData(10)]
+	public Task PublishAsyncCalledNTimes_Should_NotifyAllHandlersRegisteredToTheNotificationNTimes(int count)
 	{
-		return PublishAsyncCalledNTimes_Should_NotifyAllHandlersRegisteredToTheNotificationNTimes(1);
+		return CallPublishAsyncNTimesAndVerifyThatAllHandlersRegisteredToTheNotificationWereNotifiedNTimes<BasicNotification, BasicNotification>(count, BasicNotificationHandlerType);
 	}
 
-	[Fact]
-	public Task PublishAsyncCalledTwice_Should_NotifyAllHandlersRegisteredToTheNotificationTwice()
+	[Theory]
+	[InlineData(1)]
+	[InlineData(2)]
+	[InlineData(10)]
+	public Task PublishAsyncCalledNTimes_WithBoxedNotification_Should_NotifyAllHandlersRegisteredToTheNotificationNTimes(int count)
 	{
-		return PublishAsyncCalledNTimes_Should_NotifyAllHandlersRegisteredToTheNotificationNTimes(2);
+		return CallPublishAsyncNTimesAndVerifyThatAllHandlersRegisteredToTheNotificationWereNotifiedNTimes<INotification, BasicNotification>(count, BasicNotificationHandlerType);
 	}
 
-	[Fact]
-	public Task BoxedPublishAsync_Should_NotifyAllHandlersRegisteredToTheNotification()
+	[Theory]
+	[InlineData(1)]
+	[InlineData(2)]
+	[InlineData(10)]
+	public Task PublishAsyncCalledNTimes_WithNestedNotification_Should_NotifyAllHandlersRegisteredToTheNotificationNTimes(int count)
 	{
-		return BoxedPublishAsyncCalledNTimes_Should_NotifyAllHandlersRegisteredToTheNotificationNTimes(1);
+		return CallPublishAsyncNTimesAndVerifyThatAllHandlersRegisteredToTheNotificationWereNotifiedNTimes<NestedNotification, NestedNotification>(count, NestedNotificationHandlerType);
 	}
 
-	[Fact]
-	public Task BoxedPublishAsyncCalledTwice_Should_NotifyAllHandlersRegisteredToTheNotificationTwice()
+	[Theory]
+	[InlineData(1)]
+	[InlineData(2)]
+	[InlineData(10)]
+	public Task PublishAsyncCalledNTimes_WithBoxedNestedNotification_Should_NotifyAllHandlersRegisteredToTheNotificationNTimes(int count)
 	{
-		return BoxedPublishAsyncCalledNTimes_Should_NotifyAllHandlersRegisteredToTheNotificationNTimes(2);
+		return CallPublishAsyncNTimesAndVerifyThatAllHandlersRegisteredToTheNotificationWereNotifiedNTimes<INotification, NestedNotification>(count, NestedNotificationHandlerType);
 	}
 
 	[Fact]
