@@ -20,14 +20,14 @@ public sealed class NotificationHandlersRegistrationTests
 		var services = new ServiceCollection();
 
 		var expectedDescriptor = new ServiceDescriptor(
-			serviceType: typeof(INotificationHandler<NameChangedNotification>),
-			implementationType: typeof(NameChangedNotificationHandler),
+			serviceType: typeof(INotificationHandler<BasicNotification>),
+			implementationType: typeof(BasicNotificationHandler),
 			lifetime: serviceLifetime);
 
 		//act
 		services.AddMediato(cfg =>
 		{
-			cfg.RegisterNotificationHandler<NameChangedNotificationHandler, NameChangedNotification>(serviceLifetime);
+			cfg.RegisterNotificationHandler<BasicNotificationHandler, BasicNotification>(serviceLifetime);
 		});
 
 		//assert
@@ -44,10 +44,10 @@ public sealed class NotificationHandlersRegistrationTests
 		//arrange
 		var services = new ServiceCollection();
 		var expectedServices = new ServiceCollection();
-		expectedServices.AddService<INotificationHandler<NameChangedNotification>, NameChangedNotificationHandler>(serviceLifetime);
-		expectedServices.AddService<INotificationHandler<NameChangedNotification>, NameChangedNotificationHandlerA>(serviceLifetime);
-		expectedServices.AddService<INotificationHandler<NameChangedNotification>, NameChangedNotificationHandlerB>(serviceLifetime);
-		expectedServices.AddService<INotificationHandler<NameChangedNotification>, NameChangedNotificationHandlerC>(serviceLifetime);
+		expectedServices.AddService<INotificationHandler<BasicNotification>, BasicNotificationHandler>(serviceLifetime);
+		expectedServices.AddService<INotificationHandler<BasicNotification>, BasicNotificationHandlerA>(serviceLifetime);
+		expectedServices.AddService<INotificationHandler<BasicNotification>, BasicNotificationHandlerB>(serviceLifetime);
+		expectedServices.AddService<INotificationHandler<BasicNotification>, BasicNotificationHandlerC>(serviceLifetime);
 
 		//act
 		services.AddMediato(cfg =>
@@ -65,17 +65,17 @@ public sealed class NotificationHandlersRegistrationTests
 	{
 		//arrange
 		var services = new ServiceCollection();
-		services.AddSingleton<INotificationHandler<NameChangedNotification>, NameChangedNotificationHandler>();
+		services.AddSingleton<INotificationHandler<BasicNotification>, BasicNotificationHandler>();
 
 		var expectedDescriptor = new ServiceDescriptor(
-			serviceType: typeof(INotificationHandler<NameChangedNotification>),
-			implementationType: typeof(NameChangedNotificationHandler),
+			serviceType: typeof(INotificationHandler<BasicNotification>),
+			implementationType: typeof(BasicNotificationHandler),
 			lifetime: ServiceLifetime.Singleton);
 
 		//act
 		services.AddMediato(cfg =>
 		{
-			cfg.RegisterNotificationHandler<NameChangedNotificationHandler, NameChangedNotification>();
+			cfg.RegisterNotificationHandler<BasicNotificationHandler, BasicNotification>();
 		});
 
 		//assert
@@ -87,11 +87,11 @@ public sealed class NotificationHandlersRegistrationTests
 	{
 		//arrange
 		var services = new ServiceCollection();
-		services.AddSingleton<INotificationHandler<NameChangedNotification>, NameChangedNotificationHandler>();
+		services.AddSingleton<INotificationHandler<BasicNotification>, BasicNotificationHandler>();
 
 		var expectedDescriptor = new ServiceDescriptor(
-			serviceType: typeof(INotificationHandler<NameChangedNotification>),
-			implementationType: typeof(NameChangedNotificationHandler),
+			serviceType: typeof(INotificationHandler<BasicNotification>),
+			implementationType: typeof(BasicNotificationHandler),
 			lifetime: ServiceLifetime.Singleton);
 
 		//act

@@ -9,6 +9,22 @@ namespace Mediato.MicrosoftDependencyInjection.Tests.NotificationTests;
 
 public abstract class NotificationPublisherBaseTests
 {
+	private static readonly Type OwnerType = typeof(Owner<,>);
+	private static readonly Type OrderCounterType = typeof(OrderCounter);
+
+	protected static readonly Type[] BasicNotificationHandlerType =
+	[
+		typeof(BasicNotificationHandler),
+		typeof(BasicNotificationHandlerA),
+		typeof(BasicNotificationHandlerB),
+		typeof(BasicNotificationHandlerC),
+	];
+
+	protected static readonly Type[] NestedNotificationHandlerType =
+	[
+		typeof(NestedNotificationHandler)
+	];
+
 	private readonly IServiceCollection _services;
 
 	protected IServiceProvider ServiceProvider { get; }
@@ -28,11 +44,12 @@ public abstract class NotificationPublisherBaseTests
 
 	protected abstract void Configure(MediatorConfiguration config);
 
-	protected async Task PublishAsyncCalledNTimes_Should_NotifyAllHandlersRegisteredToTheNotificationNTimes(int count)
+	protected async Task CallPublishAsyncNTimesAndVerifyThatAllHandlersRegisteredToTheNotificationWereNotifiedNTimes<TBaseType, T>(int count, params Type[] notificationHandlers)
+		where TBaseType : INotification where T : TBaseType, new()
 	{
 		//arrange
 		var publisher = ServiceProvider.GetRequiredService<INotificationPublisher>();
-		var notification = new NameChangedNotification("Darth Vader");
+		TBaseType notification = new T();
 
 		//act
 		for (var i = 0; i < count; i++)
@@ -41,29 +58,17 @@ public abstract class NotificationPublisherBaseTests
 		}
 
 		//assert
-		CounterShouldBe<NameChangedNotificationHandler>(count);
-		CounterShouldBe<NameChangedNotificationHandlerA>(count);
-		CounterShouldBe<NameChangedNotificationHandlerB>(count);
-		CounterShouldBe<NameChangedNotificationHandlerC>(count);
+		foreach (var handlerType in notificationHandlers)
+		{
+			CounterShouldBe(handlerType, count);
+		}
 	}
 
-	protected async Task BoxedPublishAsyncCalledNTimes_Should_NotifyAllHandlersRegisteredToTheNotificationNTimes(int count)
+	protected void CounterShouldBe(Type counterOwner, int expectedCount)
 	{
-		//arrange
-		var publisher = ServiceProvider.GetRequiredService<INotificationPublisher>();
-		INotification notification = new NameChangedNotification("Darth Vader");
-
-		//act
-		for (var i = 0; i < count; i++)
-		{
-			await publisher.PublishAsync(notification, TestContext.Current.CancellationToken);
-		}
-
-		//assert
-		CounterShouldBe<NameChangedNotificationHandler>(count);
-		CounterShouldBe<NameChangedNotificationHandlerA>(count);
-		CounterShouldBe<NameChangedNotificationHandlerB>(count);
-		CounterShouldBe<NameChangedNotificationHandlerC>(count);
+		var counterServiceType = OwnerType.MakeGenericType(counterOwner, OrderCounterType);
+		var counter = ServiceProvider.GetRequiredService(counterServiceType) as IOwner<OrderCounter>;
+		counter!.Service.Count.ShouldBe(expectedCount);
 	}
 
 	protected void CounterShouldBe<TOwner>(int expectedCount)
