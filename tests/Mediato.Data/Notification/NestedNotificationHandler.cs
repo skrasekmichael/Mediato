@@ -1,9 +1,8 @@
-﻿using Mediato.Abstractions;
-using Mediato.Common;
+﻿using Mediato.Common;
 
 namespace Mediato.Data.Notification;
 
-internal sealed class NestedNotificationHandler : INotificationHandler<NestedNotification>
+internal sealed class NestedNotificationHandler : INestedNotificationHandler
 {
 	private readonly Owner<NestedNotificationHandler, OrderCounter> _counter;
 
