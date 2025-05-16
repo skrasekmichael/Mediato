@@ -7,14 +7,13 @@ namespace Mediato.Publishers;
 public sealed class InProcessWhenAllNotificationPublisher(IServiceProvider serviceProvider) : INotificationPublisher
 {
 	private static readonly Type NotificationHandlerTypeDefinition = typeof(INotificationHandler<>);
-	private static readonly Type NotificationType = typeof(INotification);
 
 	private readonly IServiceProvider _serviceProvider = serviceProvider;
 	private readonly INotificationWrapperProvider _wrapperProvider = serviceProvider.GetRequiredService<INotificationWrapperProvider>();
 
 	public ValueTask PublishAsync<TNotification>(TNotification notification, CancellationToken ct = default) where TNotification : INotification
 	{
-		if (typeof(TNotification) == NotificationType)
+		if (typeof(TNotification).IsInterface)
 		{
 			return DefaultInternalPublishAsync(notification, ct);
 		}

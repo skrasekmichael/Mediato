@@ -51,7 +51,7 @@ public sealed class InProcessForEachNotificationPublisherTests : NotificationPub
 	[InlineData(10)]
 	public Task PublishAsyncCalledNTimes_WithBoxedNestedNotification_Should_NotifyAllHandlersRegisteredToTheNotificationNTimes(int count)
 	{
-		return CallPublishAsyncNTimesAndVerifyThatAllHandlersRegisteredToTheNotificationWereNotifiedNTimes<INotification, NestedNotification>(count, NestedNotificationHandlerType);
+		return CallPublishAsyncNTimesAndVerifyThatAllHandlersRegisteredToTheNotificationWereNotifiedNTimes<INestedNotification, NestedNotification>(count, NestedNotificationHandlerType);
 	}
 
 	[Fact]
