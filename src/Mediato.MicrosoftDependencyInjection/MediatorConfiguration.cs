@@ -32,27 +32,19 @@ public sealed class MediatorConfiguration(IServiceCollection services)
 		return this;
 	}
 
-	public MediatorConfiguration UseDefaultServices()
-	{
-		UseRequestSender<InProcessRequestSender>();
-		UseNotificationPublisher<InProcessForEachNotificationPublisher>();
+	public MediatorConfiguration UseDefaultRequestSender(ServiceLifetime lifetime = ServiceLifetime.Singleton) => UseRequestSender<InProcessRequestSender>(lifetime);
 
+	public MediatorConfiguration UseRequestSender<TRequestSender>(ServiceLifetime lifetime = ServiceLifetime.Singleton) where TRequestSender : class, IRequestSender
+	{
+		_services.AddService<IRequestSender, TRequestSender>(lifetime);
 		return this;
 	}
 
-	public MediatorConfiguration UseDefaultRequestSender() => UseRequestSender<InProcessRequestSender>();
+	public MediatorConfiguration UseDefaultNotificationPublisher(ServiceLifetime lifetime = ServiceLifetime.Singleton) => UseNotificationPublisher<InProcessForEachNotificationPublisher>(lifetime);
 
-	public MediatorConfiguration UseRequestSender<TRequestSender>() where TRequestSender : class, IRequestSender
+	public MediatorConfiguration UseNotificationPublisher<TPublisher>(ServiceLifetime lifetime = ServiceLifetime.Singleton) where TPublisher : class, INotificationPublisher
 	{
-		_services.AddSingleton<IRequestSender, TRequestSender>();
-		return this;
-	}
-
-	public MediatorConfiguration UseDefaultNotificationPublisher() => UseNotificationPublisher<InProcessForEachNotificationPublisher>();
-
-	public MediatorConfiguration UseNotificationPublisher<TPublisher>() where TPublisher : class, INotificationPublisher
-	{
-		_services.AddSingleton<INotificationPublisher, TPublisher>();
+		_services.AddService<INotificationPublisher, TPublisher>(lifetime);
 		return this;
 	}
 
