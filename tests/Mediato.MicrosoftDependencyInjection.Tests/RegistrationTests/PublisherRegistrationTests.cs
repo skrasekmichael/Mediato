@@ -8,18 +8,20 @@ namespace Mediato.MicrosoftDependencyInjection.Tests.RegistrationTests;
 
 public sealed class PublisherRegistrationTests
 {
-	[Fact]
-	public void UseDefaultNotificationPublisher_Should_RegisterInProcessForEachNotificationPublisher()
+	[Theory]
+	[InlineData(ServiceLifetime.Singleton)]
+	[InlineData(ServiceLifetime.Scoped)]
+	public void UseDefaultNotificationPublisher_Should_RegisterInProcessForEachNotificationPublisher(ServiceLifetime lifetime)
 	{
 		//arrange
 		var services = new ServiceCollection();
 		var expectedServices = new ServiceCollection();
-		expectedServices.AddSingleton<INotificationPublisher, InProcessForEachNotificationPublisher>();
+		expectedServices.AddService<INotificationPublisher, InProcessForEachNotificationPublisher>(lifetime);
 
 		//act
 		services.AddMediato(cfg =>
 		{
-			cfg.UseDefaultNotificationPublisher();
+			cfg.UseDefaultNotificationPublisher(lifetime);
 		});
 
 		//assert
@@ -27,18 +29,20 @@ public sealed class PublisherRegistrationTests
 		expectedServices.First().ShouldMatch(expectedServices.First());
 	}
 
-	[Fact]
-	public void UseNotificationPublisher_Should_RegisterGivenNotificationPublisher()
+	[Theory]
+	[InlineData(ServiceLifetime.Singleton)]
+	[InlineData(ServiceLifetime.Scoped)]
+	public void UseNotificationPublisher_Should_RegisterGivenNotificationPublisher(ServiceLifetime lifetime)
 	{
 		//arrange
 		var services = new ServiceCollection();
 		var expectedServices = new ServiceCollection();
-		expectedServices.AddSingleton<INotificationPublisher, InProcessWhenAllNotificationPublisher>();
+		expectedServices.AddService<INotificationPublisher, InProcessWhenAllNotificationPublisher>(lifetime);
 
 		//act
 		services.AddMediato(cfg =>
 		{
-			cfg.UseNotificationPublisher<InProcessWhenAllNotificationPublisher>();
+			cfg.UseNotificationPublisher<InProcessWhenAllNotificationPublisher>(lifetime);
 		});
 
 		//assert
